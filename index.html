@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>India Population Live — Estimate</title>
+<style>
+  :root {
+    --bg: #07111f;
+    --panel: rgba(12, 28, 47, .88);
+    --text: #f7f9fc;
+    --muted: #aebdce;
+    --saffron: #ff9933;
+    --green: #138808;
+    --blue: #6ea8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; }
+  body {
+    overflow: hidden;
+    color: var(--text);
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(255,153,51,.13), transparent 38%),
+      radial-gradient(ellipse at 85% 100%, rgba(19,136,8,.13), transparent 40%),
+      var(--bg);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  }
+  .stage {
+    width: 100vw;
+    height: 100vh;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 3vw, 42px);
+  }
+  .frame {
+    width: min(100%, calc((100vh - 24px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    max-height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(18px, 3.1vw, 46px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: clamp(14px, 2vw, 28px);
+    background: linear-gradient(145deg, rgba(14,31,52,.96), rgba(5,14,25,.98));
+    box-shadow: 0 22px 80px rgba(0,0,0,.35);
+  }
+  .topline { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+  .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+  .flag { width: clamp(38px, 5.2vw, 70px); aspect-ratio: 3/2; border-radius: 4px; overflow:hidden; flex-shrink:0; box-shadow:0 2px 12px #0005; }
+  .stripe { height:33.333%; }
+  .stripe.saffron { background:#ff9933; }
+  .stripe.white { background:#fff; display:flex; align-items:center; justify-content:center; }
+  .stripe.green { background:#138808; }
+  .chakra { width:clamp(8px, 1.15vw, 15px); aspect-ratio:1; border:1.5px solid #000080; border-radius:50%; position:relative; }
+  .chakra:before, .chakra:after { content:""; position:absolute; left:50%; top:50%; background:#000080; transform:translate(-50%,-50%); }
+  .chakra:before { width:1px; height:100%; }
+  .chakra:after { width:100%; height:1px; }
+  .brand-title { font-size:clamp(12px, 1.7vw, 23px); font-weight:800; letter-spacing:.13em; text-transform:uppercase; white-space:nowrap; }
+  .brand-sub { color:var(--muted); font-size:clamp(9px, 1vw, 14px); letter-spacing:.08em; margin-top:4px; }
+  .live { display:flex; align-items:center; gap:7px; padding:8px 12px; border:1px solid rgba(255,90,90,.35); border-radius:999px; background:rgba(255,60,60,.1); color:#ff8585; font-size:clamp(10px, 1.1vw, 15px); font-weight:800; letter-spacing:.12em; }
+  .dot { width:7px; height:7px; background:#ff4d4d; border-radius:50%; box-shadow:0 0 12px #ff4d4d; }
+  .main { text-align:center; padding:1.5% 0; }
+  .eyebrow { color:#c5d1df; text-transform:uppercase; letter-spacing:.24em; font-weight:700; font-size:clamp(10px, 1.25vw, 17px); }
+  .number {
+    margin:clamp(10px, 2vw, 25px) 0 8px;
+    font-size:clamp(27px, 7.4vw, 100px);
+    font-weight:850;
+    line-height:1.05;
+    letter-spacing:-.045em;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+    background:linear-gradient(90deg, #fff 0%, #eaf1fa 45%, #b9ffd0 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 36px rgba(92,190,155,.08);
+  }
+  .estimate-line { color:var(--muted); font-size:clamp(10px, 1.3vw, 17px); }
+  .growth { display:inline-flex; align-items:center; gap:8px; margin-top:clamp(12px, 1.8vw, 24px); padding:9px 14px; border-radius:999px; background:rgba(19,136,8,.12); border:1px solid rgba(89,201,92,.24); color:#a6f0ad; font-size:clamp(10px, 1.1vw, 15px); }
+  .bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; border-top:1px solid rgba(255,255,255,.12); padding-top:clamp(12px, 1.8vw, 24px); }
+  .disclaimer { max-width:74%; color:#9eafc1; font-size:clamp(8px, .95vw, 13px); line-height:1.45; }
+  .clock { text-align:right; flex-shrink:0; }
+  #time { font-size:clamp(12px, 1.65vw, 22px); font-weight:750; font-variant-numeric:tabular-nums; }
+  #date { color:var(--muted); font-size:clamp(8px, .9vw, 12px); margin-top:4px; }
+  .tricolor { position:absolute; left:0; top:0; width:100%; height:5px; display:flex; }
+  .tricolor span { flex:1; }
+  .tricolor span:nth-child(1) { background:var(--saffron); }
+  .tricolor span:nth-child(2) { background:#fff; }
+  .tricolor span:nth-child(3) { background:var(--green); }
+  @media (max-aspect-ratio: 4/5) {
+    .stage { padding:8px; }
+    .frame { width:100%; aspect-ratio:16/9; padding:14px; border-radius:12px; }
+    .brand-title { letter-spacing:.07em; }
+    .number { font-size:clamp(23px, 7vw, 54px); }
+    .disclaimer { max-width:70%; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <main class="frame" aria-label="India population estimate live counter">
+    <div class="tricolor" aria-hidden="true"><span></span><span></span><span></span></div>
+    <header class="topline">
+      <div class="brand">
+        <div class="flag" aria-label="Indian tricolor flag" role="img">
+          <div class="stripe saffron"></div>
+          <div class="stripe white"><div class="chakra"></div></div>
+          <div class="stripe green"></div>
+        </div>
+        <div>
+          <div class="brand-title">India Population</div>
+          <div class="brand-sub">LIVE ESTIMATE • INDIA</div>
+        </div>
+      </div>
+      <div class="live"><span class="dot"></span> LIVE</div>
+    </header>
+
+    <section class="main">
+      <div class="eyebrow">Estimated population</div>
+      <div class="number" id="population" aria-live="off">Loading…</div>
+      <div class="estimate-line">People • model-based estimate, not a real-time census</div>
+      <div class="growth"><span aria-hidden="true">↗</span><span id="growthText">Estimated change: calculating…</span></div>
+    </section>
+
+    <footer class="bottom">
+      <div class="disclaimer">
+        <strong>ESTIMATE, NOT OFFICIAL LIVE DATA.</strong>
+        This counter extrapolates from a configurable baseline and annual growth rate. It does not track individual births or deaths. Source and assumptions should be verified before publication.
+      </div>
+      <div class="clock">
+        <div id="time">--:--:--</div>
+        <div id="date">Loading date…</div>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script>
+/*
+  CONFIGURATION — verify these assumptions before publishing.
+  baselinePopulation: estimated population at baselineDate (not a live official count)
+  annualGrowthRate: annual net growth assumption as a decimal; 0.008 = 0.8%
+  This simple model compounds continuously. It is illustrative, not an official forecast.
+*/
+const CONFIG = {
+  baselinePopulation: 1460000000,
+  baselineDate: "2026-01-01T00:00:00Z",
+  annualGrowthRate: 0.008
+};
+
+const populationEl = document.getElementById("population");
+const growthTextEl = document.getElementById("growthText");
+const timeEl = document.getElementById("time");
+const dateEl = document.getElementById("date");
+const YEAR_MS = 365.2425 * 24 * 60 * 60 * 1000;
+const baselineMs = Date.parse(CONFIG.baselineDate);
+const startPopulation = Number(CONFIG.baselinePopulation);
+const rate = Number(CONFIG.annualGrowthRate);
+
+function formatPopulation(value) {
+  return Math.floor(value).toLocaleString("en-IN");
+}
+function updatePopulation() {
+  const now = Date.now();
+  const elapsedYears = (now - baselineMs) / YEAR_MS;
+  const estimated = startPopulation * Math.exp(rate * elapsedYears);
+  populationEl.textContent = formatPopulation(estimated);
+  const perDay = (startPopulation * rate) / 365.2425;
+  const perSecond = perDay / 86400;
+  growthTextEl.textContent =
+    "+" + Math.max(0, perSecond).toFixed(1) + " estimated people/second";
+}
+function updateClock() {
+  const now = new Date();
+  timeEl.textContent = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit",
+    second: "2-digit", hour12: true
+  }).format(now) + " IST";
+  dateEl.textContent = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric"
+  }).format(now);
+}
+function tick() { updatePopulation(); updateClock(); }
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
